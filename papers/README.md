@@ -1,4 +1,4 @@
-# [Initial Survey on Reasoning and Efficiency: Recent Advances in Deployable Language Models]
+# Initial Survey on Reasoning and Efficiency: Recent Advances in Deployable Language Models
 
 This repository curates and critically reviews recent work on efficient and robust inference for reasoning-capable language models, with a focus on quantization, test-time adaptation, and scaling strategies.
 
@@ -11,7 +11,7 @@ This repository curates and critically reviews recent work on efficient and robu
 
 ## Paper Reviews
 
-### 1. [Test-Time Model Adaptation for Quantized Neural Networks] (arXiv:2508.02180)
+### 1. Test-Time Model Adaptation for Quantized Neural Networks (arXiv:2508.02180)
 - **Problem**: ...
 - **Approach**: ...
 - **Insight**: ...

@@ -30,14 +30,14 @@ This repository curates and critically reviews recent work on efficient and robu
 2. **SMALLER** ; compact models with strong reasoning
 3. **FASTER** ; accelerate decoding
 
-### Direction 1: SHORTER
+#### Direction 1: SHORTER
 - **RL methods**: O1-Pruner (length+accuracy rewards), DAST (dynamic token budgets)
 - **SFT methods**: TokenSkip (semantic skipping), TALE (optimal token budget search)
 - **Latent reasoning**: Implicit-KD (hidden-state distillation), Coconut (continuous feedback)
 - ✅ Best for: Max compression (10-100× token reduction)
 - ⚠️ Tradeoff: Interpretability loss; harder debugging
 
-### Direction 2: SMALLER
+#### Direction 2: SMALLER
 - **Distillation**: Mix (long+short CoT data), DLCoT (segmented simplification)
 - **Quantization**: 8-bit ≈ lossless; 4-bit degrades complex reasoning
 - **Pruning**: ❌ Generally harmful to reasoning (unlike standard LLMs)
@@ -45,19 +45,19 @@ This repository curates and critically reviews recent work on efficient and robu
 - ✅ Best for: Deployment on edge devices
 - ⚠️ Tradeoff: Requires high-quality teacher data or massive RL compute
 
-### Direction 3: FASTER
+#### Direction 3: FASTER
 - **Efficient sampling**: ϕ-Decoding (future path simulation), Fast Best-of-N (early rejection)
 - **Self-consistency**: RPC (perplexity-guided convergence), Path-Consistency (prefix reuse)
 - **Decomposition**: AoT (DAG-based subproblems), AR (atomic reasoning trees)
 - ✅ Best for: Real-time applications
 - ⚠️ Tradeoff: Added overhead from controllers/value models may offset gains
 
-### Critical Insights
+#### Critical Insights
 - Small models CAN reason well (Qwen2.5 series) — capacity ≠ bottleneck
 - Pruning fails for reasoning → suggests distributed representation reliance
 - Safety-efficiency tension: Shorter CoTs may skip safety self-correction (H-CoT)
 
-### Future Directions
+#### Future Directions
 - Safety-aware compression (avoid bypassing guardrails)
 - Memory-efficient architectures (KV cache compression)
 - Training efficiency via tiny high-quality datasets (LIMO: 817 samples)

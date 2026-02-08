@@ -1,6 +1,6 @@
 # Initial Survey on Reasoning and Efficiency: Recent Advances in Deployable Language Models
 
-This repository curates and critically reviews recent work on efficient and robust inference for reasoning-capable language models, with a focus on quantization, test-time adaptation, and scaling strategies. Link to my Zotero library for this project: [Zotero](https://www.zotero.org/groups/6415084/llm-efficiency-research/library)
+This repository curates and critically reviews recent work on efficient and robust inference for reasoning-capable language models, with a focus on quantization, test-time adaptation, and scaling strategies. Link to my Zotero library for this project: [Zotero](https://www.zotero.org/groups/6415084/llm-efficiency-research/library).
 
 ## Summary Table
 

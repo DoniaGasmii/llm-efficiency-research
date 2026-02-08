@@ -26,9 +26,9 @@ This repository curates and critically reviews recent work on efficient and robu
 - Latency redundancy (slow decoding)
 
 **Core Framework**: 3 orthogonal efficiency directions:
-1. **SHORTER** — compress CoT length
-2. **SMALLER** — compact models with strong reasoning
-3. **FASTER** — accelerate decoding
+1. **SHORTER** ; compress CoT length
+2. **SMALLER** ; compact models with strong reasoning
+3. **FASTER** ; accelerate decoding
 
 ### Direction 1: SHORTER
 - **RL methods**: O1-Pruner (length+accuracy rewards), DAST (dynamic token budgets)

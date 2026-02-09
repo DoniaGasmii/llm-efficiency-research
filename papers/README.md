@@ -80,13 +80,13 @@ This repository curates and critically reviews recent work on efficient and robu
 > **The tension**: Reasoning models generate 10–100× longer CoTs than standard LLMs → massive inference cost → quantization essential for deployment. **But**: theoretical concern that quantization errors compound across long reasoning chains, catastrophically degrading correctness. *No prior work empirically validated this for modern reasoning models.*
 
 ### Approach
-- **Scope**: 7 models (1.5B–70B) including DeepSeek-R1 variants, QwQ-32B, Qwen3-8B
+- **Scope**: 7 models (1.5B–70B) including DeepSeek-R1 variants, QwQ, Qwen3
 - **Quantization**: 12 algorithms across weight-only (AWQ/GPTQ), KV cache (QuaRot), weight-activation (SmoothQuant/FlatQuant) at 3–8 bits
 - **Benchmarks**: AIME-120 (hard math), MATH-500, GSM8K (easy math), GPQA-Diamond (science), LiveCodeBench (coding)
 - **Key design**: Controlled ablation on model origin (distillation vs. RL training from same base), CoT length analysis, scaling studies
 
 ### Core Insights (Takeaways)
-| Insight | Why it matters for *your* research |
+| Insight | Why it matters for *our* research |
 |---------|-----------------------------------|
 | **W4A16 is effectively lossless** (≤1% drop) even on AIME | → Quantization *isn't* the bottleneck for reasoning quality; focus should shift to *where* errors occur in CoT rather than bit-width alone |
 | **Hard tasks suffer 4× more degradation** at low bits (W4A4) | → Suggests *error accumulation scales with reasoning depth*; opportunity to model error propagation as function of CoT length/task complexity |

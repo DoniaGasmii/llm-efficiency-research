@@ -7,7 +7,7 @@ This repository curates and critically reviews recent work on efficient and robu
 | Paper | Focus | Key Contribution | Limitations / Open Questions |
 |-------|-------|------------------|------------------------------|
 | Deng et al. (2508.02180) | Quantized Test-Time Adaptation | ZOA: zeroth-order optimization for quantized model adaptation under domain shift | Assumes detectable domain shift; limited to ViT/ResNet architectures; no reasoning tasks evaluated |
-| Liu et al. (2504.04823) | Quantization of reasoning models | First systematic study showing reasoning models tolerate aggressive quantization (W4A16 lossless); reveals task difficulty × bit-width interaction; exposes model-origin sensitivity** | Heavy math bias (AIME/GSM8K); no fine-grained error localization in CoT; static quantization only; ignores safety/calibration impacts |
+| Liu et al. (2504.04823) | Quantization of reasoning models | First systematic study showing reasoning models tolerate aggressive quantization (W4A16 lossless); reveals task difficulty × bit-width interaction; exposes model-origin sensitivity | Heavy math bias (AIME/GSM8K); no fine-grained error localization in CoT; static quantization only; ignores safety/calibration impacts |
 | ... | ... | ... | ... |
 
 ## Paper Reviews

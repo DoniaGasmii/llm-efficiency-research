@@ -130,11 +130,47 @@ Based on this paper + quantization/reasoning literature, these are **actionable 
 
 
 ### 5. Mixed-Precision Quantization for Language Models: Techniques and Prospects
-- **Problem**: ...
-- **Approach**: ...
-- **Insight**: ...
-- **Critique**: ...
-- **Link**: [arXiv](https://arxiv.org/abs/2510.16805)
+
+#### Core Problem
+- Exponential LM scaling → unsustainable compute/memory demands
+- Uniform low-bit quantization degrades accuracy in sensitive components
+- Need adaptive precision allocation balancing efficiency/accuracy
+
+#### Key Contribution: Formal Taxonomy
+- **MPW**: Mixed-precision weights only (W-int{4,8}/A-FP16)
+- **MPW+UPA**: Mixed weights + uniform activations (W-int{4,8}/A-int8)
+- **MPW+MPA**: Mixed weights + mixed activations (W-int{4,8}/A-{int8,BF16})
+- *Excludes misnomers*: W-only quantization or uniform W/A at different precisions
+
+#### Framework Landscape (Top Performers)
+| Framework | Strategy | Avg Bits | Perplexity Δ (LLaMA2-13B) |
+|-----------|----------|----------|---------------------------|
+| MixLLM    | Salience-driven channels | 4-bit | +1.0-2.0% |
+| SqLLM     | Hessian-guided + sparse outliers | 4-bit | +1.0-2.0% |
+| CMPQ      | Outlier preservation | 4-bit | +13% (LLaMA3-8B) |
+| BitMod    | Hardware-aware grouping | 4-bit | +2.7-4.5% |
+| ResQ      | PCA subspace separation | 4-bit | +2.7-4.5% |
+
+#### Critical Insight
+- 4-bit avg precision → near-baseline accuracy achievable
+- 2-bit avg precision → catastrophic degradation (>55% perplexity ↑)
+- MPW/MPW+UPA frameworks outperform MPW+MPA → activations harder to quantize than weights
+- LM-specific constraint: Search-based optimization (RL/NAS) infeasible at billion-param scale → reliance on sensitivity heuristics
+
+#### Limitations / Open Questions
+- No standardized benchmark suite for MXPLM comparison (heterogeneous eval protocols)
+- Hardware support lagging: Most GPUs lack native mixed-precision execution → dequantization overhead
+- KV-cache quantization largely unexplored despite dominating long-context memory
+- Trade-off analysis missing: Energy savings vs. accuracy loss curves not systematically reported
+
+#### Future Directions
+1. Hardware-aware design (TPU/GPU support for fine-grained mixed precision)
+2. Activation/KV-cache quantization robustness
+3. Scalable global optimization (beyond layer-wise heuristics)
+4. Dynamic precision scheduling for edge/cloud deployment
+
+#### Link
+[arXiv](https://arxiv.org/abs/2510.16805)
 
 
 ...

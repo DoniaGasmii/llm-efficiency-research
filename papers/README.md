@@ -169,8 +169,7 @@ Based on this paper + quantization/reasoning literature, these are **actionable 
 3. Scalable global optimization (beyond layer-wise heuristics)
 4. Dynamic precision scheduling for edge/cloud deployment
 
-#### Link
-[arXiv](https://arxiv.org/abs/2510.16805)
+#### Link [arXiv](https://arxiv.org/abs/2510.16805)
 
 
 ...

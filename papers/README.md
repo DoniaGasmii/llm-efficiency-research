@@ -2,12 +2,13 @@
 
 This repository curates and critically reviews recent work on efficient and robust inference for reasoning-capable language models, with a focus on quantization, test-time adaptation, and scaling strategies. Link to my Zotero library for this project: [Zotero](https://www.zotero.org/groups/6415084/llm-efficiency-research/library).
 
-## Summary Table
+## Summary Table 
 
 | Paper | Focus | Key Contribution | Limitations / Open Questions |
 |-------|-------|------------------|------------------------------|
 | Deng et al. (2508.02180) | Quantized Test-Time Adaptation | ZOA: zeroth-order optimization for quantized model adaptation under domain shift | Assumes detectable domain shift; limited to ViT/ResNet architectures; no reasoning tasks evaluated |
 | Liu et al. (2504.04823) | Quantization of reasoning models | First systematic study showing reasoning models tolerate aggressive quantization (W4A16 lossless); reveals task difficulty × bit-width interaction; exposes model-origin sensitivity | Heavy math bias (AIME/GSM8K); no fine-grained error localization in CoT; static quantization only; ignores safety/calibration impacts |
+| Rakka et al. (2510.16805) | Mixed-precision quantization survey for LMs | Formal taxonomy distinguishing true MP (varying bitwidths *within* layers) from misnomers; systematic framework comparison showing 4-bit avg precision preserves accuracy (<2% perplexity Δ) while 2-bit fails catastrophically (>55% Δ); exposes LM-specific constraints (search-based optimization infeasible at scale → reliance on sensitivity heuristics) | No standardized benchmark suite (heterogeneous eval protocols); hardware support lagging (dequantization overhead on GPUs); KV-cache quantization largely unexplored despite dominating long-context memory; missing energy-accuracy trade-off curves |
 | ... | ... | ... | ... |
 
 ## Paper Reviews

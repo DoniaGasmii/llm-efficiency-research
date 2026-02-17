@@ -14,10 +14,120 @@ This repository curates and critically reviews recent work on efficient and robu
 ## Paper Reviews
 
 ### 1. Test-Time Model Adaptation for Quantized Neural Networks 
-- **Problem**: ...
-- **Approach**: ...
-- **Insight**: ...
-- **Critique**: ...
+
+---
+
+#### TL;DR
+
+Quantized models deployed in the real world can't adapt to distribution shifts because classic Test-Time Adaptation (TTA) requires backpropagation — which is either unsupported or impractical on quantized hardware. This paper proposes **ZOA**, a gradient-free adaptation framework that uses only **2 forward passes** per sample and accumulates domain knowledge across shifts.
+
+---
+
+#### Problem
+
+1. **Quantization + deployment reality:** Models are quantized (e.g., W8A8, W4A4) to fit on edge devices (autonomous driving, robotics). This reduces precision but enables real-time inference.
+
+2. **OOD degradation is worse for quantized models:** When test-time domain shifts occur (rain, fog, corruption), quantized models degrade *more severely* than full-precision ones. The paper proves this theoretically: OOD loss sensitivity `ΔL` grows **exponentially** as bit-width `n` decreases (`ΔL ∝ 2^(-n)`). Empirically, a W3A3 model shows ~49% accuracy gap vs. ~30% for FP32 on ImageNet-C.
+
+3. **Existing TTA is incompatible with QNNs:** Standard TTA methods (e.g., TENT, TTT) rely on backpropagation. Quantized models have discrete/step-wise weight functions → vanishing gradients. Edge hardware often has no backprop support at all, and even when possible, it blows memory and latency budgets.
+
+4. **Prior forward-only work (FOA) is still too slow:** FOA attempted gradient-free TTA but required up to **28 forward passes** per sample — still too expensive for real-time.
+
+---
+
+#### Approach
+
+ZOA has two core components:
+
+##### 1. Zeroth-Order Gradient Estimation (via SPSA)
+
+Instead of backpropagating gradients, ZOA estimates them using **Simultaneous Perturbation Stochastic Approximation (SPSA)**.
+
+The key idea: approximate the gradient by measuring how the loss changes when you randomly perturb the parameters.
+
+```
+∇θ L ≈ [L(x; θ + c·ε) - L(x; θ)] / c · ε
+```
+
+- `ε` = random perturbation vector sampled from a zero-mean distribution (Rademacher or Segmented Uniform)
+- `c` = small scalar perturbation scale
+- Setting `q = 1` (one perturbation step) means: **1 forward pass** for the current loss + **1 forward pass** for the perturbed loss = **2 forward passes total**
+
+This gives a *coarse* gradient estimate but is sufficient for adaptation and works on any QNN without modification.
+
+##### 2. Continual Domain Knowledge Reprogramming Learning (DRL)
+
+The 2-forward-pass ZO estimate is coarse by design. To compensate, ZOA accumulates and reuses **domain knowledge** across the adaptation stream:
+
+- Learnable **domain parameters** (compact, low-memory vectors) are stored per domain type encountered
+- A set of learnable **aggregation coefficients** blend past domain knowledge into the current adaptation
+- Two perturbation vectors are used: `ε` (for model parameters) and `ν` (for aggregation coefficients), both estimated via ZO
+
+This gives ZOA a kind of long-term memory: even with a noisy gradient signal, accumulated past knowledge stabilizes and improves adaptation over time.
+
+##### 3. Domain Knowledge Management
+
+To prevent **interference** between domain knowledge entries (e.g., "foggy" hurting "rainy"):
+- A **domain similarity threshold** (`domain_t`) controls when to store vs. reuse existing knowledge
+- Similar domains reuse existing parameters; sufficiently different domains get a new entry
+- Memory cost is negligible (compact parameter vectors, not full model copies)
+
+---
+
+#### Key Results
+
+| Model | Setting | FOA (SOTA) | ZOA | Δ |
+|-------|---------|-----------|-----|---|
+| ViT-B | W6A6, ImageNet-C | ~X% | +5.0% over FOA | **+5.0%** |
+| ViT-B | W8A8, ImageNet-C | baseline | improved | ✓ |
+| ResNet-50 | W8A8, ImageNet-C | baseline | improved | ✓ |
+| ViM-S (Mamba) | various | N/A | competitive | ✓ |
+
+**Efficiency vs. FOA:**
+
+| Method | Forward Passes | Backprop? | Memory |
+|--------|---------------|-----------|--------|
+| TENT (gradient) | 1 FP + BP | ✓ | High |
+| FOA | ~28 FP | ✗ | Medium |
+| **ZOA** | **2 FP** | **✗** | **Low** |
+
+Validated across ViT (Transformer), ResNet (CNN), and ViM (SSM/Mamba) — architecture-agnostic.
+
+---
+
+#### Insights
+
+- **Zeroth-order optimization is an underexplored fit for TTA.** The field has used ZO for LLM fine-tuning (MeZO, AdaZeta) but not systematically for test-time adaptation of quantized models. This paper fills that gap.
+
+- **The coarseness of ZO gradients is partially offset by memory (DRL).** Rather than trying to get a better gradient estimate (expensive), the paper compensates with cheap domain memory. Elegant trade-off.
+
+- **Quantization and OOD robustness are conflated problems.** Most quantization papers optimize for clean-data accuracy. This paper argues the OOD robustness gap should be a first-class concern for deployed QNNs.
+
+- **The domain knowledge scheme is essentially a tiny mixture-of-experts over past adaptation states.** A small set of domain parameter vectors + learned mixing coefficients — similar in spirit to LoRA adapters for different domains.
+
+---
+
+#### Critique
+
+- **The ZO gradient estimate is inherently noisy and high-variance.** For very low bit-widths (W3A3, W4A4), where the problem is most severe, the signal-to-noise ratio of 2-forward-pass SPSA may be insufficient. The paper shows results down to W4A4 but doesn't deeply analyze failure modes at extreme quantization.
+
+- **Domain knowledge management relies on a hand-tuned threshold (`domain_t`).** In practice, it's set to 0.1 for ViT and 0.2 for ResNet. The sensitivity of performance to this threshold in real deployment (continuous, unpredictable shifts) is unclear.
+
+- **ImageNet-C is a limited testbed.** It has 15 corruption types at 5 severity levels — a clean, academic benchmark. Real-world deployment (sim-to-real gap, sensor drift, adversarial conditions) may behave very differently.
+
+- **Comparison is only against FOA** as the forward-only baseline. The field of TTA is moving fast; newer gradient-free or mixed methods may not have been included.
+
+- **No wall-clock latency benchmarks on actual edge hardware.** "2 forward passes" is theoretically lean, but real impact on inference latency on quantized hardware (NPUs, FPGAs) is not demonstrated.
+
+---
+
+#### Questions & Open Threads
+
+- How does ZOA interact with **post-training quantization (PTQ)** vs. **quantization-aware training (QAT)** models? Does the calibration method affect ZO adaptation quality?
+- Could the domain knowledge management scheme benefit from a **learned similarity metric** rather than a fixed threshold?
+- How does ZOA perform in **continual learning** settings where domain labels are truly unknown (unsupervised stream with no clean separation between domains)?
+- Would **sparse perturbation** (as in MeZO for LLMs) further improve the efficiency/accuracy tradeoff for very large quantized vision models?
+
 - **Link**: [arXiv](https://doi.org/10.48550/arXiv.2508.02180)
 
 ### 2. Efficient Reasoning Models: A Survey (Feng et al., 2025)

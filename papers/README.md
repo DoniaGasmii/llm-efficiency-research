@@ -69,11 +69,64 @@ This repository curates and critically reviews recent work on efficient and robu
 **Repo**: https://github.com/fscdc/Awesome-Efficient-Reasoning-Models
 
 ### 3. On the Role of Temperature Sampling in Test-Time Scaling 
-- **Problem**: ...
-- **Approach**: ...
-- **Insight**: ...
-- **Critique**: ...
-- **Link**: [arXiv](https://arxiv.org/abs/2510.02611)
+
+> Sampling at multiple temperatures unlocks hard problems that no single temperature can solve, giving base LLMs a free +7.3 points over standard TTS — and closing the gap with RL-trained models.
+
+---
+
+**Problem:** Test-Time Scaling (TTS) assumes that generating more samples K always improves reasoning. Prior work treated temperature as a minor hyperparameter and kept it fixed. This paper shows both assumptions are wrong: at large K, accuracy plateaus completely, and fixing temperature means you're only exploring a fraction of the model's actual reasoning boundary.
+
+---
+
+**Core Idea:** Different temperatures solve *different subsets* of hard problems. Temperature isn't just a creativity dial — it's an independent axis of reasoning diversity. A question that's unsolvable at T=0.7 with 1,024 samples may be trivially solvable at T=0.9. By splitting your sample budget across multiple temperatures instead of one, you enlarge the total set of questions the model can solve — without any extra training.
+
+---
+
+**Method:** Given a compute budget, divide samples evenly across temperatures T=0.0 to T=1.2 (in 0.1 steps, skipping 0.1–0.3 which add no new coverage). Run all temperatures in parallel, then use a verifier or voting to select the best answer. An optional early-exit variant (multi-temperature voting) identifies easy questions early and stops sampling them, cutting compute by ~26–54% at no accuracy cost.
+
+---
+
+**Results:**
+- Averaged over Qwen3 (0.6B → 8B) and 5 benchmarks: **+7.3 points** over single-temperature TTS
+- Qwen3-4B on AIME 2025: **+13.3 points** (60.0% → 73.3%)
+- Scaling K from 1,024 → 13,312 at fixed T: **+0%** (hard plateau)
+- Scaling T across 13 temperatures at 1,024 samples each: **+6.67%** (on the same question set)
+- Base Qwen3-4B with temperature scaling **matches** RL-trained Polaris-4B on AIME 2025 Pass@All
+- Efficient voting method cuts compute **31–54%** on MATH500, **~78%** on Hi-ToM, with negligible accuracy loss
+
+---
+
+**Why It Works:** The model's solvable question set has four natural categories: *easy* (any temperature works), *medium* (all temperatures work but rarely), *hard* (only specific temperatures work — this is the key tier), and *impossible* (no temperature can solve them, training is needed). The entropy analysis confirms this: for easy/medium questions, correct traces have noticeably lower entropy than incorrect ones — the model "knows it knows." For hard questions this signal breaks down entirely, which means uncertainty-guided decoding strategies (discard high-entropy traces) are only safe for easy problems. Temperature scaling works because it ensures the hard-but-solvable questions find their preferred temperature, rather than being abandoned because they never fired at the one temperature you chose.
+
+---
+
+**Critique:**
+
+- 📄 *Paper admits:*
+  - Compute cost scales linearly with number of temperatures — 12 temperatures = 12× the cost of single-T, which is only acceptable if you have a strong verifier to exit easy questions early
+  - Voting-based early exit has a known failure mode: majority vote isn't always right, especially for hard problems where the model is rarely correct
+  - Hi-ToM shows inconsistent scaling behavior — some questions get "solved" spuriously by weaker models, so the benchmark may not cleanly separate real reasoning gains from noise
+  - Variable temperature *within* a single trace (as opposed to across traces) is unexplored and flagged as future work
+
+- 🧠 *My read:*
+  - The "+7.3 points" headline is averaged across model sizes including 0.6B, where gains are large but arguably less meaningful (small models have high variance). The more honest headline might be Qwen3-8B's average of +4.8 points
+  - The RL comparison is compelling but narrow — only 30 AIME 2025 problems, only one RL model (Polaris-4B). Matching on 3 unsolved questions out of 30 could be noise
+  - They use GPT-5 to verify AIME reasoning traces (filtering "lucky guesses") — this is rigorous and worth noting, but it also means results may not replicate in setups without a strong verifier
+  - The paper treats temperatures 0.0–1.2 uniformly but gives no guidance on how to choose the subset for a new domain or model — the "skip 0.1–0.3" heuristic is derived empirically on Qwen3 and may not generalize
+  - The core phenomenon (different temperatures = different solvable sets) is shown but not deeply explained. *Why* does T=0.9 unlock a specific AIME problem that T=0.7 can't? The entropy analysis describes the effect but doesn't explain the cause at the level of attention or reasoning steps
+
+---
+
+**Open Questions:**
+- What determines a question's "preferred temperature"? Is it related to problem structure, required reasoning depth, or something else?
+- Does temperature scaling compose with search-based TTS (Tree of Thoughts, MCTS)? Could you scale both the branching factor and temperature?
+- Can a model learn to predict its own preferred temperature per question — making this adaptive rather than brute-force?
+- The "impossible" category (questions no temperature can solve) — how large is it in practice, and is it fixed or model-size dependent?
+- Does this transfer to multimodal or agentic settings, or is it specific to autoregressive text reasoning?
+
+---
+
+**Link:** [arXiv:2510.02611](https://arxiv.org/abs/2510.02611)
 
 ### 4. Quantization Hurts Reasoning? An Empirical Study on Quantized Reasoning Models 
 
